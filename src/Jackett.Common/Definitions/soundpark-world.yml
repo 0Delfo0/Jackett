@@ -1,12 +1,12 @@
 ﻿---
   site: soundpark.world
   name: Sound Park
-  description: "Metal Tracker is a Semi-Private site dedicated to HEAVY METAL MUSIC. This definition is for the English site."
+  description: "Sound Park is a Semi-Private site dedicated to music"
   language: en-us
   type: semi-private
   encoding: UTF-8
   links:
-    - http://en.metal-tracker.com/
+    - https://soundpark.world/
 
   caps:
     categories:
@@ -19,19 +19,21 @@
       music-search: [q, album, artist, label, year]
 
   login:
-    path: /user/login.html
-    method: form
+    path: /login
+    method: post
     inputs:
       username: "{{ .Config.username }}"
       password: "{{ .Config.password }}"
-      go: "Enter"
+#      go: "Enter"
+      return: yes
+      is_submit: "ENTER"
     error:
-      - selector: div.errorSummary
+      - selector: div .stdmsg
         message:
-          selector: div.errorSummary ul li
+          selector: div .stdmsg_text
     test:
-      path: /torrents/search.html
-      selector: li li:has(a[href="/user/logout.html"])
+      path: /
+      selector: 'div #user-block'
 
   search:
     paths:
