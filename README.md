@@ -46,10 +46,11 @@ Developer note: The software implements the [Torznab](https://github.com/Sonarr/
  * Nyaa.si
  * Nyaa-Pantsu
  * Nyoo
- * OxTorrent
  * RARBG
  * RuTor
  * ShowRSS
+ * sukebei.Nyaa.si
+ * sukebei-Pantsu
  * The Pirate Bay
  * TNTVillage <!-- maintained by bonny1992 -->
  * Tokyo Toshokan
@@ -120,6 +121,7 @@ Developer note: The software implements the [Torznab](https://github.com/Sonarr/
  * BJ-Share
  * BlueBird
  * Blutopia
+ * Brasil Tracker
  * BroadcastTheNet
  * BrokenStones
  * BTNext
@@ -159,7 +161,6 @@ Developer note: The software implements the [Torznab](https://github.com/Sonarr/
  * GFTracker
  * Gfxnews
  * GFXPeers
- * Ghost City
  * GigaTorrents
  * GimmePeers <!-- maintained by jamesb2147 -->
  * GODS  [![(invite needed)][inviteneeded]](#)
@@ -239,6 +240,8 @@ Developer note: The software implements the [Torznab](https://github.com/Sonarr/
  * Synthesiz3r
  * Tasmanit
  * TBPlus
+ * TehConnection
+ * TenYardTracker
  * The Empire
  * The Geeks
  * The Horror Charnel
@@ -249,7 +252,6 @@ Developer note: The software implements the [Torznab](https://github.com/Sonarr/
  * The Show
  * The Vault
  * The-Torrents
- * TenYardTracker
  * Torrent Network
  * Torrent Sector Crew
  * Torrent.LT
@@ -264,6 +266,7 @@ Developer note: The software implements the [Torznab](https://github.com/Sonarr/
  * Torrentland
  * TorrentLeech
  * Torrents.Md
+ * TorrentSeeds
  * Torrent-Syndikat
  * TorrentWTF
  * TorViet
@@ -279,6 +282,7 @@ Developer note: The software implements the [Torznab](https://github.com/Sonarr/
  * World-In-HD
  * WorldOfP2P
  * x264
+ * xBytesV2
  * XSpeeds
  * Xthor
  * Your Exotic Torrents
@@ -367,17 +371,40 @@ Example config for apache:
    - On Linux (as user root): `wget -O - https://curl.haxx.se/ca/cacert.pem | cert-sync /dev/stdin`
    - On macOS: `curl -sS https://curl.haxx.se/ca/cacert.pem | cert-sync --user /dev/stdin`
 
-*  __Enable logging__
+*  __Enable enhanced logging__
 
-  You can get additional logging with the command line switches `-t -l` or by enabling `Enhanced logging` via the web interface (followed by clicking on the `Apply Server Settings` button).
+  You can get *enhanced* logging with the command line switches `-t -l` or by enabling `Enhanced logging` via the web interface (followed by clicking on the `Apply Server Settings` button).
   Please post logs if you are unable to resolve your issue with these switches ensuring to remove your username/password/cookies.
   The logfiles (log.txt/updater.txt) are stored in `%ProgramData%\Jackett` on Windows and `~/.config/Jackett/` on Linux/macOS.
+
+## Configuring OMDb
+This feature is used as a fallback to get the movie/series title if only the IMDB ID is provided in the request.
+To use it, please just request a free API key on [OMDb](http://www.omdbapi.com/apikey.aspx) (1,000 daily requests limit) and paste the key in Jackett
 
 ## Creating an issue
 Please supply as much information about the problem you are experiencing as possible. Your issue has a much greater chance of being resolved if logs are supplied so that we can see what is going on. Creating an issue with '### isn't working' doesn't help anyone to fix the problem.
 
 ## Contributing
 All contributions are welcome just send a pull request.  Jackett's framework allows our team (and any other volunteering dev) to implement new trackers in an hour or two. If you'd like support for a new tracker but are not a developer then feel free to leave a request on the [issues page](https://github.com/Jackett/Jackett/issues).  It is recommended to use Visual Studio 2017 when making code changes in this project. You can download the community version for free [here](https://www.visualstudio.com/downloads/).
+
+
+## Building from source
+
+### Windows
+* Open the Jackett solution in Visual Studio 2017
+* Select Jackett.Console as startup project
+* Build/Start the project
+
+### Linux
+
+```bash
+sudo apt install mono-complete nuget msbuild # install build tools (debian/ubuntu)
+git clone https://github.com/Jackett/Jackett.git
+cd Jackett/src
+nuget restore Jackett.sln # prepare dependencies
+msbuild Jackett.Console/Jackett.Console.csproj /t:Build /p:Configuration=Debug # compile
+mono Jackett.Console/bin/Debug/JackettConsole.exe # run jackett
+```
 
 ## Screenshots
 

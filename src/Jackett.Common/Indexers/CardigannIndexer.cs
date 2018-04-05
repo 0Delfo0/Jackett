@@ -1,28 +1,27 @@
-﻿using Jackett.Utils.Clients;
-using NLog;
-using Jackett.Services.Interfaces;
-using Jackett.Utils;
-using Jackett.Models;
-using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
-using System;
-using Jackett.Models.IndexerConfig;
 using System.Collections.Specialized;
-using System.Text;
-using static Jackett.Models.IndexerConfig.ConfigurationData;
-using AngleSharp.Parser.Html;
-using System.Text.RegularExpressions;
-using System.Web;
-using AngleSharp.Dom;
-using AngleSharp.Dom.Html;
 using System.Linq;
 using System.Net;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using AngleSharp.Dom;
+using AngleSharp.Dom.Html;
+using AngleSharp.Parser.Html;
+using Jackett.Common.Helpers;
+using Jackett.Common.Models;
+using Jackett.Common.Models.IndexerConfig;
+using static Jackett.Common.Models.IndexerConfig.ConfigurationData;
+using Jackett.Common.Services.Interfaces;
+using Jackett.Common.Utils;
+using Jackett.Common.Utils.Clients;
 using Microsoft.AspNetCore.WebUtilities;
-using Jacket.Common.Helpers;
-using System.Collections;
+using Newtonsoft.Json.Linq;
+using NLog;
 
-namespace Jackett.Indexers
+namespace Jackett.Common.Indexers
 {
     public class CardigannIndexer : BaseWebIndexer
     {
@@ -31,6 +30,8 @@ namespace Jackett.Indexers
 
         protected WebClientStringResult landingResult;
         protected IHtmlDocument landingResultDocument;
+
+        protected List<string> DefaultCategories = new List<string>();
 
         new ConfigurationData configData
         {
@@ -173,6 +174,8 @@ namespace Jackett.Indexers
                         }
                     }
                     AddCategoryMapping(Categorymapping.id, TorznabCat, Categorymapping.desc);
+                    if (Categorymapping.Default)
+                        DefaultCategories.Add(Categorymapping.id);
                 }
             }
             LoadValuesFromJson(null);
@@ -246,6 +249,27 @@ namespace Jackett.Indexers
 
                 template = template.Replace(all, expanded);
                 ReReplaceRegexMatches = ReReplaceRegexMatches.NextMatch();
+            }
+
+            // handle join expression
+            // Example: {{ join .Categories "," }}
+            Regex JoinRegex = new Regex(@"{{\s*join\s+(\..+?)\s+""(.*?)""\s*}}");
+            var JoinMatches = JoinRegex.Match(template);
+
+            while (JoinMatches.Success)
+            {
+                string all = JoinMatches.Groups[0].Value;
+                string variable = JoinMatches.Groups[1].Value;
+                string delimiter = JoinMatches.Groups[2].Value;
+
+                var input = (ICollection<string>)variables[variable];
+                var expanded = string.Join(delimiter, input);
+
+                if (modifier != null)
+                    expanded = modifier(expanded);
+
+                template = template.Replace(all, expanded);
+                JoinMatches = JoinMatches.NextMatch();
             }
 
             // handle if ... else ... expression
@@ -1083,6 +1107,11 @@ namespace Jackett.Indexers
             variables[".Query.Episode"] = query.GetEpisodeSearchString();
 
             var mappedCategories = MapTorznabCapsToTrackers(query);
+            if (mappedCategories.Count == 0)
+            {
+                mappedCategories = this.DefaultCategories;
+            }
+
             variables[".Categories"] = mappedCategories;
 
             var KeywordTokens = new List<string>();

@@ -1,5 +1,4 @@
-﻿using NLog;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -8,15 +7,14 @@ using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
-using Jackett.Services.Interfaces;
-using Jacket.Common;
-using Jackett.Models.Config;
-using CloudFlareUtilities;
 using com.LandonKey.SocksWebProxy;
 using com.LandonKey.SocksWebProxy.Proxy;
+using CloudFlareUtilities;
 using Jackett.Common.Models.Config;
+using Jackett.Common.Services.Interfaces;
+using NLog;
 
-namespace Jackett.Utils.Clients
+namespace Jackett.Common.Utils.Clients
 {
     public class HttpWebClient : WebClient
     {
@@ -145,6 +143,7 @@ namespace Jackett.Utils.Clients
 
             using (ClearanceHandler clearanceHandlr = new ClearanceHandler())
             {
+                clearanceHandlr.ClearanceDelay = 7000; // 2018/03/22: something odd is going on with cloudflare, for a few users higher delays are needed (depending on which server you end up?)
                 using (HttpClientHandler clientHandlr = new HttpClientHandler
                 {
                     CookieContainer = cookies,

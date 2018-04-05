@@ -5,15 +5,15 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Jackett.Models;
-using Jackett.Models.IndexerConfig;
-using Jackett.Services.Interfaces;
-using Jackett.Utils;
-using Jackett.Utils.Clients;
+using Jackett.Common.Models;
+using Jackett.Common.Models.IndexerConfig;
+using Jackett.Common.Services.Interfaces;
+using Jackett.Common.Utils;
+using Jackett.Common.Utils.Clients;
 using Newtonsoft.Json.Linq;
 using NLog;
 
-namespace Jackett.Indexers
+namespace Jackett.Common.Indexers
 {
     public class Yts : BaseWebIndexer
     {
@@ -112,7 +112,11 @@ namespace Jackett.Indexers
 
             try
             {
-                var jsonContent = JObject.Parse(response.Content);
+                // returned content might start with an html error message, remove it first
+                var jsonStart = response.Content.IndexOf('{');
+                var jsonContentStr = response.Content.Remove(0, jsonStart);
+
+                var jsonContent = JObject.Parse(jsonContentStr);
 
                 string result = jsonContent.Value<string>("status");
                 if (result != "ok") // query was not successful

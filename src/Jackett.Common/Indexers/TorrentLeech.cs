@@ -5,17 +5,15 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using System.Web;
 using CsQuery;
-using Jackett.Models;
-using Jackett.Models.IndexerConfig;
-using Jackett.Services.Interfaces;
-using Jackett.Utils;
-using Jackett.Utils.Clients;
+using Jackett.Common.Models;
+using Jackett.Common.Models.IndexerConfig;
+using Jackett.Common.Services.Interfaces;
+using Jackett.Common.Utils;
 using Newtonsoft.Json.Linq;
 using NLog;
 
-namespace Jackett.Indexers
+namespace Jackett.Common.Indexers
 {
     public class TorrentLeech : BaseWebIndexer
     {
@@ -180,7 +178,7 @@ namespace Jackett.Indexers
                     if (!query.MatchQueryStringAND(release.Title))
                         continue;
 
-                    release.Link = new Uri(qRow.Find(".quickdownload > a").Attr("href"));
+                    release.Link = new Uri(new Uri(SiteLink), qRow.Find(".quickdownload > a").Attr("href"));
 
                     var dateString = qRow.Find("span.addedInLine").Get(0).LastChild.NodeValue.Replace("on", string.Empty).Trim(); ;
                     release.PublishDate = DateTime.ParseExact(dateString, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);

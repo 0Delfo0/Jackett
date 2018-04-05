@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Jackett.Models
+namespace Jackett.Common.Models
 {
     // A Dictionary allowing the same key multiple times
     public class KeyValuePairList : List<KeyValuePair<string, selectorBlock>>, IDictionary<string, selectorBlock>
@@ -90,6 +90,7 @@ namespace Jackett.Models
         public string id { get; set; }
         public string cat { get; set; }
         public string desc { get; set; }
+        public bool Default { get; set; }
     }
 
     public class capabilitiesBlock

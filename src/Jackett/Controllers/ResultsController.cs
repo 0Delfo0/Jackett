@@ -10,14 +10,15 @@ using System.Web.Http;
 using System.Web.Http.Controllers;
 using System.Web.Http.Filters;
 using System.Xml.Linq;
-using Jackett.Indexers;
-using Jackett.Models;
-using Jackett.Utils;
+using Jackett.Common;
+using Jackett.Common.Indexers;
+using Jackett.Common.Models;
+using Jackett.Common.Models.DTO;
+using Jackett.Common.Services.Interfaces;
+using Jackett.Common.Utils;
 using NLog;
-using Jackett.Models.DTO;
-using Jackett.Services.Interfaces;
 
-namespace Jackett.Controllers.V20
+namespace Jackett.Controllers
 {
     public class RequiresApiKeyAttribute : AuthorizationFilterAttribute
     {
@@ -154,7 +155,7 @@ namespace Jackett.Controllers.V20
         }
 
         [HttpGet]
-        public async Task<Models.DTO.ManualSearchResult> Results([FromUri]Models.DTO.ApiSearch request)
+        public async Task<ManualSearchResult> Results([FromUri]ApiSearch request)
         {
             var manualResult = new ManualSearchResult();
             var trackers = IndexerService.GetAllIndexers().Where(t => t.IsConfigured);
@@ -237,7 +238,7 @@ namespace Jackett.Controllers.V20
         }
 
         [HttpGet]
-        public async Task<IHttpActionResult> Torznab([FromUri]Models.DTO.TorznabRequest request)
+        public async Task<IHttpActionResult> Torznab([FromUri]Common.Models.DTO.TorznabRequest request)
         {
             if (string.Equals(CurrentQuery.QueryType, "caps", StringComparison.InvariantCultureIgnoreCase))
             {
@@ -249,28 +250,22 @@ namespace Jackett.Controllers.V20
 
             if (CurrentQuery.ImdbID != null)
             {
-                if (CurrentQuery.QueryType != "movie")
-                {
-                    logger.Warn($"A non movie request with an imdbid was made from {Request.GetOwinContext().Request.RemoteIpAddress}.");
-                    return GetErrorXML(201, "Incorrect parameter: only movie-search supports the imdbid parameter");
-                }
-
                 if (!string.IsNullOrEmpty(CurrentQuery.SearchTerm))
                 {
-                    logger.Warn($"A movie-search request from {Request.GetOwinContext().Request.RemoteIpAddress} was made contining q and imdbid.");
+                    logger.Warn($"A search request from {Request.GetOwinContext().Request.RemoteIpAddress} was made containing q and imdbid.");
                     return GetErrorXML(201, "Incorrect parameter: please specify either imdbid or q");
                 }
 
                 CurrentQuery.ImdbID = ParseUtil.GetFullImdbID(CurrentQuery.ImdbID); // normalize ImdbID
                 if (CurrentQuery.ImdbID == null)
                 {
-                    logger.Warn($"A movie-search request from {Request.GetOwinContext().Request.RemoteIpAddress} was made with an invalid imdbid.");
+                    logger.Warn($"A search request from {Request.GetOwinContext().Request.RemoteIpAddress} was made with an invalid imdbid.");
                     return GetErrorXML(201, "Incorrect parameter: invalid imdbid format");
                 }
 
                 if (!CurrentIndexer.TorznabCaps.SupportsImdbSearch)
                 {
-                    logger.Warn($"A movie-search request with imdbid from {Request.GetOwinContext().Request.RemoteIpAddress} was made but the indexer {CurrentIndexer.DisplayName} doesn't support it.");
+                    logger.Warn($"A search request with imdbid from {Request.GetOwinContext().Request.RemoteIpAddress} was made but the indexer {CurrentIndexer.DisplayName} doesn't support it.");
                     return GetErrorXML(203, "Function Not Available: imdbid is not supported by this indexer");
                 }
             }
@@ -353,7 +348,7 @@ namespace Jackett.Controllers.V20
 
         [HttpGet]
         [JsonResponse]
-        public async Task<Models.DTO.TorrentPotatoResponse> Potato([FromUri]Models.DTO.TorrentPotatoRequest request)
+        public async Task<TorrentPotatoResponse> Potato([FromUri]TorrentPotatoRequest request)
         {
             var result = await CurrentIndexer.ResultsForQuery(CurrentQuery);
 
@@ -372,7 +367,7 @@ namespace Jackett.Controllers.V20
             {
                 var release = AutoMapper.Mapper.Map<ReleaseInfo>(r);
                 release.Link = serverService.ConvertToProxyLink(release.Link, serverUrl, CurrentIndexer.ID, "dl", release.Title);
-                var item = new Models.DTO.TorrentPotatoResponseItem()
+                var item = new TorrentPotatoResponseItem()
                 {
                     release_name = release.Title + "[" + CurrentIndexer.DisplayName + "]", // Suffix the indexer so we can see which tracker we are using in CPS as it just says torrentpotato >.>
                     torrent_id = release.Guid.ToString(),
@@ -389,7 +384,7 @@ namespace Jackett.Controllers.V20
                 return item;
             });
 
-            var potatoResponse = new Models.DTO.TorrentPotatoResponse()
+            var potatoResponse = new TorrentPotatoResponse()
             {
                 results = potatoReleases.ToList()
             };

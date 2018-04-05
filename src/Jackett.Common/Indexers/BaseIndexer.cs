@@ -4,16 +4,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
-using Jackett.Models;
-using Jackett.Models.IndexerConfig;
-using Jackett.Services.Interfaces;
-using Jackett.Utils;
-using Jackett.Utils.Clients;
+using Jackett.Common.Models;
+using Jackett.Common.Models.IndexerConfig;
+using Jackett.Common.Services.Interfaces;
+using Jackett.Common.Utils;
+using Jackett.Common.Utils.Clients;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NLog;
 
-namespace Jackett.Indexers
+namespace Jackett.Common.Indexers
 {
     public abstract class BaseIndexer : IIndexer
     {
@@ -473,6 +473,7 @@ namespace Jackett.Indexers
                 || response.Status == System.Net.HttpStatusCode.GatewayTimeout
                 || (int)response.Status == 521 // used by cloudflare to signal the original webserver is refusing the connection
                 || (int)response.Status == 522 // used by cloudflare to signal the original webserver is not reachable at all (timeout)
+                || (int)response.Status == 523 // used by cloudflare to signal the original webserver is not reachable at all (Origin is unreachable)
                 )
             {
                 throw new Exception("Request to " + response.Request.Url + " failed (Error " + response.Status + ") - The tracker seems to be down.");

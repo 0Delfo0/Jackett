@@ -5,17 +5,15 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Jacket.Common;
-using Jackett.Models;
-using Jackett.Models.IndexerConfig;
-using Jackett.Services.Interfaces;
-using Jackett.Utils;
-using Jackett.Utils.Clients;
+using Jackett.Common.Models;
+using Jackett.Common.Models.IndexerConfig;
+using Jackett.Common.Services.Interfaces;
+using Jackett.Common.Utils;
+using Jackett.Common.Utils.Clients;
 using Newtonsoft.Json.Linq;
 using NLog;
-using Jacket.Common.Utils;
 
-namespace Jackett.Indexers
+namespace Jackett.Common.Indexers
 {
     public class Rarbg : BaseWebIndexer
     {
@@ -38,6 +36,7 @@ namespace Jackett.Indexers
 
         private DateTime lastTokenFetch;
         private string token;
+        private string app_id;
 
         private readonly TimeSpan TOKEN_DURATION = TimeSpan.FromMinutes(10);
 
@@ -86,6 +85,8 @@ namespace Jackett.Indexers
             AddCategoryMapping(32, TorznabCatType.ConsoleXbox360, "Games/XBOX-360");
             AddCategoryMapping(33, TorznabCatType.PCISO, "Software/PC ISO");
             AddCategoryMapping(35, TorznabCatType.BooksEbook, "e-Books");
+
+            app_id = "jackett_v" + EnvironmentUtil.JackettVersion;
         }
 
         private async Task CheckToken()
@@ -94,6 +95,8 @@ namespace Jackett.Indexers
             {
                 var queryCollection = new NameValueCollection();
                 queryCollection.Add("get_token", "get_token");
+                queryCollection.Add("app_id", app_id);
+                
 
                 var tokenUrl = ApiEndpoint + "?" + queryCollection.GetQueryString();
 
@@ -131,7 +134,7 @@ namespace Jackett.Indexers
             var queryCollection = new NameValueCollection();
             queryCollection.Add("token", token);
             queryCollection.Add("format", "json_extended");
-            queryCollection.Add("app_id", "jackett_v" + EnvironmentUtil.JackettVersion);
+            queryCollection.Add("app_id", app_id);
             queryCollection.Add("limit", "100");
             queryCollection.Add("ranked", "0");
 
